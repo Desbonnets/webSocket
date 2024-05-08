@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Gilles\\source\\repos\\api\\api\\api.csproj": {}
+    "C:\\Users\\Gilles\\Desktop\\Projets Perso\\projets\\websocket\\api\\api\\api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Gilles\\source\\repos\\api\\api\\api.csproj": {
+    "C:\\Users\\Gilles\\Desktop\\Projets Perso\\projets\\websocket\\api\\api\\api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Gilles\\source\\repos\\api\\api\\api.csproj",
+        "projectUniqueName": "C:\\Users\\Gilles\\Desktop\\Projets Perso\\projets\\websocket\\api\\api\\api.csproj",
         "projectName": "api",
-        "projectPath": "C:\\Users\\Gilles\\source\\repos\\api\\api\\api.csproj",
+        "projectPath": "C:\\Users\\Gilles\\Desktop\\Projets Perso\\projets\\websocket\\api\\api\\api.csproj",
         "packagesPath": "C:\\Users\\Gilles\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Gilles\\source\\repos\\api\\api\\obj\\",
+        "outputPath": "C:\\Users\\Gilles\\Desktop\\Projets Perso\\projets\\websocket\\api\\api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Gilles\\AppData\\Roaming\\NuGet\\NuGet.Config",
