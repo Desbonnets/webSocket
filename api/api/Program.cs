@@ -36,7 +36,9 @@ app.Map("/ws", async context =>
                     connections.Remove(ws);
                     await Broadcast($"{curName} left the room");
                     await Broadcast($"{connections.Count} users connected");
-                    await ws.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+                    if(result.CloseStatus != null){
+                        await ws.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+                    }
                 }
             });
     }

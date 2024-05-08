@@ -1,22 +1,6 @@
-<template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <button v-on:click="sendMessage('hello World')">Send Message</button>
-  </div>
-  <!-- <header>
-
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView /> -->
-</template>
-
 <script setup lang="ts">
 import { ref } from 'vue'
+import { RouterLink, RouterView } from 'vue-router'
 
 const connection = ref<WebSocket | null>(null)
 
@@ -29,7 +13,7 @@ const sendMessage = (message: string) => {
 
 const connectWebSocket = () => {
   console.log("Connexion au websocket")
-  connection.value = new WebSocket("ws://localhost:6001/ws");
+  connection.value = new WebSocket("ws://localhost:6001/ws?name=Gilles");
 
 
   connection.value.onopen = function(event) {
@@ -43,42 +27,42 @@ const connectWebSocket = () => {
 }
 
 connectWebSocket()
+
+const textMessage = ref(null)
+
+const handleMessage = () => {
+  if(textMessage.value !== null && textMessage.value != ''){
+    sendMessage(textMessage.value);
+  }
+}
+
 </script>
 
-<!-- <script setup lang="ts">
-// export default {
-//     name: 'App',
-//     data: function(){
-//         return {
-//         connection: null
-//         },
-//         methods: {
-//         sendMessage: const = (message: any) => {
-//             console.log(this.connection);
-//             this.connection.send(message);
-//         }
-//         }
-//         created: const = () => {
-//         console.log("connection au websocket")
-//         this.connection = new WebSocket("wss://echo.websocket.org")
+<template>
+  <div id="app">
+      
+    <p>
+      <label for="message">Message</label>
+      <input type="text" name="message" id="message" v-model="textMessage">
+    </p>
+    <button @click="handleMessage()">Send Message</button>
+    <!-- <input>
+    <button @click="sendMessage('hello World')">Send Message</button> -->
+  </div>
+  <!-- <header>
 
-//         this.connection.onopen = function(event: any) {
-//             console.log(event)
-//             console.log("connection ok")
-//         }
+    <div class="wrapper">
+      <nav>
+        <RouterLink to="/">Home</RouterLink>
+      </nav>
+    </div>
+  </header>
 
-//         this.connection.onmessage = function(event: any) {
-//             console.log(event)
-//         }
-//         }
-//     }
-// }
-// import { RouterLink, RouterView } from 'vue-router'
-
-</script> -->
+  <RouterView /> -->
+</template>
 
 <style scoped>
-/* header {
+header {
   line-height: 1.5;
   max-height: 100vh;
 }
@@ -138,5 +122,5 @@ nav a:first-of-type {
     padding: 1rem 0;
     margin-top: 1rem;
   }
-} */
+}
 </style>
