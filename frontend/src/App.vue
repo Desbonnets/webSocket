@@ -29,7 +29,7 @@ const sendMessage = (message: string) => {
 
 const connectWebSocket = () => {
   console.log("Connexion au websocket")
-  connection.value = new WebSocket("ws://localhost:6969/ws");
+  connection.value = new WebSocket("ws://localhost:6001/ws");
 
 
   connection.value.onopen = function(event) {
