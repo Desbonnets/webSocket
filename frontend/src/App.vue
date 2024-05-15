@@ -1,64 +1,31 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { RouterLink, RouterView } from 'vue-router'
+import { useRouter, RouterView } from 'vue-router'
+import { useStore } from 'vuex/types/index.js';
 
-const connection = ref<WebSocket | null>(null)
+const router = useRouter()
+const store = useStore()
 
-const sendMessage = (message: string) => {
-  console.log(connection.value)
-  if (connection.value) {
-    connection.value.send(message)
-  }
-}
+const connection = store.state.websocket
+const username = ref<string| null>(null);
 
-const connectWebSocket = () => {
-  console.log("Connexion au websocket")
-  connection.value = new WebSocket("ws://localhost:6001/ws?name=Gilles");
-
-
-  connection.value.onopen = function(event) {
-    console.log(event)
-    console.log("Connexion établie")
-  }
-
-  connection.value.onmessage = function(event) {
-    console.log(event)
-  }
-}
-
-connectWebSocket()
-
-const textMessage = ref(null)
-
-const handleMessage = () => {
-  if(textMessage.value !== null && textMessage.value != ''){
-    sendMessage(textMessage.value);
+const handleUsername = () => {
+  if(username.value !== null && username.value != ''){
+    store.dispatch('connectWebSocket', username.value)
   }
 }
 
 </script>
 
 <template>
-  <div id="app">
-      
+  <div id="app" v-if="connection === null">
     <p>
-      <label for="message">Message</label>
-      <input type="text" name="message" id="message" v-model="textMessage">
+      <label for="message">Username</label>
+      <input type="text" name="message" id="message" v-model="username">
     </p>
-    <button @click="handleMessage()">Send Message</button>
-    <!-- <input>
-    <button @click="sendMessage('hello World')">Send Message</button> -->
+    <button @click="handleUsername()">Rejoindre la conversation</button>
   </div>
-  <!-- <header>
-
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView /> -->
+  <RouterView />
 </template>
 
 <style scoped>

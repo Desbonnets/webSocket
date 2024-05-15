@@ -24,3 +24,5 @@ api/api/*.user
 # Logs and databases
 *.log
 *.sqlite
+
+frontend/package-lock.json
