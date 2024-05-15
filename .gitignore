@@ -1,3 +1,26 @@
 
 api/.vs/
 
+# Visual Studio Code files
+frontend/.vscode/
+
+# Binaries
+api/api/bin/
+api/api/obj/
+
+# User-specific files
+api/api/*.user
+
+# Packages
+*.lock
+*.dll
+*.exe
+*.pdb
+*.dll
+*.exe
+*.zip
+*.gz
+
+# Logs and databases
+*.log
+*.sqlite
