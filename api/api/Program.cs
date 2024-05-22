@@ -1,3 +1,4 @@
+
 using MySql.Data.MySqlClient;
 using System.Net;
 using System.Net.WebSockets;
@@ -9,7 +10,7 @@ builder.WebHost.UseUrls("http://localhost:6001");
 var app = builder.Build();
 app.UseWebSockets();
 
-var connections = new List<WebSocket>();
+var connections = new List<KeyValuePair<long, WebSocket>>();
 
 string server = "localhost"; // adresse du serveur MySQL
 string database = "websocket"; // nom de votre base de donn�es
@@ -18,6 +19,8 @@ string password = ""; // mot de passe MySQL
 
 string connectionString = $"Server={server};Database={database};Uid={uid};Pwd={password};";
 
+DatabaseManager dbManager = new DatabaseManager(server, database, uid, password);
+
 MySqlConnection connection = new MySqlConnection(connectionString);
 
 
@@ -25,43 +28,27 @@ app.Map("/ws", async context =>
 {
     if (context.WebSockets.IsWebSocketRequest)
     {
-        var curName = context.Request.Query["name"];
+        string curName = context.Request.Query["name"].ToString();
 
         using var ws = await context.WebSockets.AcceptWebSocketAsync();
 
-        connections.Add(ws);
+        // requete bdd qui créer l'utilisateur
+        long userId = dbManager.InsertUser(curName);
 
-        try
+        // ajoute le websocket a la list
+        connections.Add(new KeyValuePair<long, WebSocket>(userId, ws));
+
+        List<Message> Messages = dbManager.SelectMessageByConversation(1);
+
+        // envoie des messages
+        foreach (var message in Messages)
         {
-            connection.Open();
-            Console.WriteLine("Connexion à la base de données réussie!");
-
-            // Exemple d'insertion de données
-            string query = "INSERT INTO user (username) VALUES (@valeur1)";
-
-            MySqlCommand cmd = new MySqlCommand(query, connection);
-            cmd.Parameters.AddWithValue("@valeur1", curName);
-
-            int rowsAffected = cmd.ExecuteNonQuery();
-
-            if (rowsAffected > 0)
-            {
-                Console.WriteLine("Insertion réussie!");
-            }
-            else
-            {
-                Console.WriteLine("Aucune ligne insérée.");
-            }
-
-            connection.Close();
+            await Broadcast(message.getSender()+ ": " + message.getMessage());
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Erreur de connexion: " + ex.Message);
-        }
-
         await Broadcast($"{curName} joined the room");
         await Broadcast($"{connections.Count} users connected");
+        
+        // reçoie les messages
         await ReceiveMessage(
             ws,
             async (result, buffer) =>
@@ -69,11 +56,15 @@ app.Map("/ws", async context =>
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
                     string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+
+                    // requete bdd qui ajoute le message a la conversation
+                    dbManager.InsertMessage(userId, message);
+
                     await Broadcast(curName + ": " + message);
                 }
                 else if (result.MessageType == WebSocketMessageType.Close || ws.State == WebSocketState.Aborted)
                 {
-                    connections.Remove(ws);
+                    connections.Remove(new KeyValuePair<long, WebSocket>(userId, ws));
                     await Broadcast($"{curName} left the room");
                     await Broadcast($"{connections.Count} users connected");
                     if (result.CloseStatus != null)
@@ -106,10 +97,10 @@ async Task Broadcast(string message)
 
     foreach (var socket in connections)
     {
-        if (socket.State == WebSocketState.Open)
+        if (socket.Value.State == WebSocketState.Open)
         {
             var arraySegment = new ArraySegment<byte>(bytes, 0, bytes.Length);
-            await socket.SendAsync(arraySegment, WebSocketMessageType.Text, true, CancellationToken.None);
+            await socket.Value.SendAsync(arraySegment, WebSocketMessageType.Text, true, CancellationToken.None);
         }
     }
 }

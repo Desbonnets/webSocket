@@ -26,3 +26,5 @@ api/api/*.user
 *.sqlite
 
 frontend/package-lock.json
+
+.vs/

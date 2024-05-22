@@ -1,30 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useRouter, RouterView } from 'vue-router'
-import { useStore } from 'vuex/types/index.js';
-
-const router = useRouter()
-const store = useStore()
-
-const connection = store.state.websocket
-const username = ref<string| null>(null);
-
-const handleUsername = () => {
-  if(username.value !== null && username.value != ''){
-    store.dispatch('connectWebSocket', username.value)
-  }
-}
-
 </script>
 
 <template>
-  <div id="app" v-if="connection === null">
-    <p>
-      <label for="message">Username</label>
-      <input type="text" name="message" id="message" v-model="username">
-    </p>
-    <button @click="handleUsername()">Rejoindre la conversation</button>
-  </div>
   <RouterView />
 </template>
 
