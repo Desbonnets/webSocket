@@ -1,84 +1,13 @@
-<template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <button v-on:click="sendMessage('hello World')">Send Message</button>
-  </div>
-  <!-- <header>
-
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView /> -->
-</template>
-
 <script setup lang="ts">
-import { ref } from 'vue'
-
-const connection = ref<WebSocket | null>(null)
-
-const sendMessage = (message: string) => {
-  console.log(connection.value)
-  if (connection.value) {
-    connection.value.send(message)
-  }
-}
-
-const connectWebSocket = () => {
-  console.log("Connexion au websocket")
-  connection.value = new WebSocket("ws://localhost:6001/ws");
-
-
-  connection.value.onopen = function(event) {
-    console.log(event)
-    console.log("Connexion établie")
-  }
-
-  connection.value.onmessage = function(event) {
-    console.log(event)
-  }
-}
-
-connectWebSocket()
+import { useRouter, RouterView } from 'vue-router'
 </script>
 
-<!-- <script setup lang="ts">
-// export default {
-//     name: 'App',
-//     data: function(){
-//         return {
-//         connection: null
-//         },
-//         methods: {
-//         sendMessage: const = (message: any) => {
-//             console.log(this.connection);
-//             this.connection.send(message);
-//         }
-//         }
-//         created: const = () => {
-//         console.log("connection au websocket")
-//         this.connection = new WebSocket("wss://echo.websocket.org")
-
-//         this.connection.onopen = function(event: any) {
-//             console.log(event)
-//             console.log("connection ok")
-//         }
-
-//         this.connection.onmessage = function(event: any) {
-//             console.log(event)
-//         }
-//         }
-//     }
-// }
-// import { RouterLink, RouterView } from 'vue-router'
-
-</script> -->
+<template>
+  <RouterView />
+</template>
 
 <style scoped>
-/* header {
+header {
   line-height: 1.5;
   max-height: 100vh;
 }
@@ -138,5 +67,5 @@ nav a:first-of-type {
     padding: 1rem 0;
     margin-top: 1rem;
   }
-} */
+}
 </style>

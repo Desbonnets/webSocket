@@ -1,3 +1,5 @@
+
+using MySql.Data.MySqlClient;
 using System.Net;
 using System.Net.WebSockets;
 using System.Text;
@@ -8,20 +10,45 @@ builder.WebHost.UseUrls("http://localhost:6001");
 var app = builder.Build();
 app.UseWebSockets();
 
-var connections = new List<WebSocket>(); 
+var connections = new List<KeyValuePair<long, WebSocket>>();
+
+string server = "localhost"; // adresse du serveur MySQL
+string database = "websocket"; // nom de votre base de donn�es
+string uid = "root"; // nom d'utilisateur MySQL
+string password = ""; // mot de passe MySQL
+
+string connectionString = $"Server={server};Database={database};Uid={uid};Pwd={password};";
+
+DatabaseManager dbManager = new DatabaseManager(server, database, uid, password);
+
+MySqlConnection connection = new MySqlConnection(connectionString);
+
 
 app.Map("/ws", async context =>
 {
     if (context.WebSockets.IsWebSocketRequest)
     {
-        var curName = context.Request.Query["name"];
+        string curName = context.Request.Query["name"].ToString();
 
         using var ws = await context.WebSockets.AcceptWebSocketAsync();
 
-        connections.Add(ws);
+        // requete bdd qui créer l'utilisateur
+        long userId = dbManager.InsertUser(curName);
 
+        // ajoute le websocket a la list
+        connections.Add(new KeyValuePair<long, WebSocket>(userId, ws));
+
+        List<Message> Messages = dbManager.SelectMessageByConversation(1);
+
+        // envoie des messages
+        foreach (var message in Messages)
+        {
+            await Broadcast(message.getSender()+ ": " + message.getMessage());
+        }
         await Broadcast($"{curName} joined the room");
         await Broadcast($"{connections.Count} users connected");
+        
+        // reçoie les messages
         await ReceiveMessage(
             ws,
             async (result, buffer) =>
@@ -29,14 +56,21 @@ app.Map("/ws", async context =>
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
                     string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+
+                    // requete bdd qui ajoute le message a la conversation
+                    dbManager.InsertMessage(userId, message);
+
                     await Broadcast(curName + ": " + message);
                 }
                 else if (result.MessageType == WebSocketMessageType.Close || ws.State == WebSocketState.Aborted)
                 {
-                    connections.Remove(ws);
+                    connections.Remove(new KeyValuePair<long, WebSocket>(userId, ws));
                     await Broadcast($"{curName} left the room");
                     await Broadcast($"{connections.Count} users connected");
-                    await ws.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+                    if (result.CloseStatus != null)
+                    {
+                        await ws.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+                    }
                 }
             });
     }
@@ -63,10 +97,10 @@ async Task Broadcast(string message)
 
     foreach (var socket in connections)
     {
-        if(socket.State == WebSocketState.Open)
+        if (socket.Value.State == WebSocketState.Open)
         {
             var arraySegment = new ArraySegment<byte>(bytes, 0, bytes.Length);
-            await socket.SendAsync(arraySegment, WebSocketMessageType.Text, true, CancellationToken.None);
+            await socket.Value.SendAsync(arraySegment, WebSocketMessageType.Text, true, CancellationToken.None);
         }
     }
 }
