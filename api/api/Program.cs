@@ -1,4 +1,5 @@
 
+using api;
 using MySql.Data.MySqlClient;
 using System.Net;
 using System.Net.WebSockets;
@@ -6,6 +7,13 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://localhost:6001");
+
+// Add services to the container.
+
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 app.UseWebSockets();
@@ -22,7 +30,6 @@ string connectionString = $"Server={server};Database={database};Uid={uid};Pwd={p
 DatabaseManager dbManager = new DatabaseManager(server, database, uid, password);
 
 MySqlConnection connection = new MySqlConnection(connectionString);
-
 
 app.Map("/ws", async context =>
 {
@@ -104,5 +111,19 @@ async Task Broadcast(string message)
         }
     }
 }
+
+// Configure the HTTP request pipeline.
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
 
 await app.RunAsync();

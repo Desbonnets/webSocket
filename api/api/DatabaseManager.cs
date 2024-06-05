@@ -1,4 +1,6 @@
-﻿using MySql.Data.MySqlClient;
+﻿using api;
+using Microsoft.VisualBasic;
+using MySql.Data.MySqlClient;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 internal class DatabaseManager
@@ -62,6 +64,57 @@ internal class DatabaseManager
                 allMessages = list;
             }
             return allMessages;
+        }
+    }
+
+    public Conversation? SelectConversationAndMessage(long id)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            connection.Open();
+
+            string selectQuery = "SELECT c.id, c.name, c.date, u.username AS message_user, m.content AS message_content, m.timestamp AS message_date " +
+                "FROM conversation AS c " +
+                "INNER JOIN message AS m ON c.id = m.conversation_id " +
+                "INNER JOIN user AS u ON u.id = m.sender_id " +
+                "WHERE c.id = 1 " +
+                "GROUP BY m.id ";
+            MySqlCommand selectCmd = new MySqlCommand(selectQuery, connection);
+            selectCmd.Parameters.AddWithValue("@id", id);
+
+            Conversation? conversation = null;
+
+            using (MySqlDataReader reader = selectCmd.ExecuteReader())
+            {
+                if (reader.Read())
+                {
+                    conversation = new Conversation((long)reader["id"], (string)reader["name"], (DateTime)reader["date"]);
+                    while (reader.Read())
+                    {
+                        Message message = new Message((string)reader["message_content"], (string)reader["message_user"], (DateTime)reader["message_date"]);
+
+                        if (message != null)
+                            conversation.addMessage(message);
+                    }
+                }
+            }
+            return conversation;
+        }
+    }
+
+    public long InsertConversation(string name)
+    {
+        using (MySqlConnection connection = new MySqlConnection(connectionString))
+        {
+            connection.Open();
+
+            string insertQuery = "INSERT INTO `conversation` (`id`, `name`, `date`) VALUES (NULL, @name, @date)";
+            MySqlCommand insertCmd = new MySqlCommand(insertQuery, connection);
+            insertCmd.Parameters.AddWithValue("@name", name);
+            insertCmd.Parameters.AddWithValue("@date", DateTime.Now.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss"));
+
+            insertCmd.ExecuteNonQuery();
+            return insertCmd.LastInsertedId;
         }
     }
 }

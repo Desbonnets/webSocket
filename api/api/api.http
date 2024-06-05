@@ -1,0 +1,6 @@
+@api_HostAddress = http://localhost:6001
+
+GET http://localhost:6001/Conversation/1
+Accept: application/json
+
+###
