@@ -2,6 +2,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import websocket from '../websocket';
+import axios from 'axios';
+import AddConversation from '../components/AddConversation.vue';
 
 const username = ref<string| null>(null)
 const connection = ref<WebSocket | undefined>(undefined)
@@ -30,14 +32,28 @@ const handleUsername = () => {
   }
 }
 
+// const handelConversation = () => {
+//   if(name.value !== null && name.value != ''){
+    
+//   }
+// }
+
 </script>
 
 <template>
-  <div id="app" v-if="connection === undefined">
+  <div>
+    <AddConversation />
+    <!-- <div>
+      <label for="name">Nom de la conversation</label>
+      <input type="text" name="name" id="name" v-model="name" required/>
+      <button @click="handelConversation()">Créer une conversation</button>
+    </div> -->
+  </div>
+  <!-- <div id="app" v-if="connection === undefined">
     <p>
       <label for="message">Username</label>
       <input type="text" name="message" id="message" v-model="username">
     </p>
     <button @click="handleUsername()">Rejoindre la conversation</button>
-  </div>
+  </div> -->
 </template>
